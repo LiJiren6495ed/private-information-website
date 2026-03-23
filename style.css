@@ -12,6 +12,7 @@
     --bg-color: #000000;
     --main-color: #a1b6ca;
     --text-color: #e0e0e0;
+    --bf-orange: #d4ccc3;
     --font-main: 'Bedas', sans-serif; /* 使用刚才定义的名字 */
 }
 
@@ -189,4 +190,27 @@ body {
     .search-hint {
         display: none; /* 屏幕太小时，隐藏掉搜索提示，保持清爽 */
     }
+}
+
+#welcome-message {
+    font-family: 'Oswald', sans-serif;
+    font-size: 1.2rem;
+    color: var(--bf-orange); /* 使用战地橙 */
+    letter-spacing: 4px;     /* 字母间距拉开，更有高级感 */
+    margin-top: 10px;
+    text-transform: uppercase;
+    
+    /* 装饰：加一个半透明的深色底，像军用标签 */
+    background: rgba(0, 0, 0, 0.4);
+    display: inline-block;
+    padding: 5px 20px;
+    border-right: 3px solid var(--bf-orange); /* 右侧加一根橙色小竖线 */
+    
+    /* 动画：让它稍微有点闪烁感，模仿电台接收 */
+    animation: blink 4s infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
 }

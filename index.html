@@ -13,6 +13,7 @@
         <section class="time-section">
             <h1 id="clock">00:00</h1>
             <p id="date">MARCH 23, 2026</p>
+            <p id="welcome-message">WAITING FOR COMMAND...</p>
         </section>
 
         <section class="search-section">
@@ -41,6 +42,27 @@
         }
         setInterval(updateClock, 1000);
         updateClock();
+
+        function updateWelcomeMessage() {
+            const day = new Date().getDay();
+            const baseMessages = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+            const suffixes = ["，欢迎回来。", "，辛苦了。", "，状态不错。", "，准备行动。"];
+    
+            // 随机选一个后缀
+            const randomSuffix = suffixes[Math.floor(Math.random() * suffixes.length)];
+    
+            // 如果是周六，特供文案
+            if (day === 6) {
+                document.getElementById('welcome-message').textContent = "快乐星期六，好好放松一下！";
+            } else if (day === 1) {
+                document.getElementById('welcome-message').textContent = "星期一，新的勋章在等着你。";
+            } else {
+                document.getElementById('welcome-message').textContent = baseMessages[day] + randomSuffix;
+            }
+        }
+        
+        // 记得在页面加载时调用
+        updateWelcomeMessage();
 
         const searchForm = document.getElementById('search-form');
         const searchInput = document.getElementById('search-input');
