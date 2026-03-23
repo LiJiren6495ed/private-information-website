@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Cyber Poster</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="grain-overlay"></div>
+
+    <main class="container">
+        <section class="time-section">
+            <h1 id="clock">00:00</h1>
+            <p id="date">MARCH 23, 2026</p>
+        </section>
+
+        <section class="search-section">
+            <form id="search-form">
+                <input type="text" id="search-input" placeholder="TYPE TO SEARCH..." autocomplete="off" autofocus>
+            </form>
+            <p class="search-hint">G: Google / B: Bilibili / GH: Github / W: Wiki / E: Bing</p>
+        </section>
+
+        <nav class="shortcuts">
+            <a href="https://gemini.google.com/app?hl=zh-cn/" target="_blank">GEMINI</a>
+            <a href="https://www.doubao.com/" target="_blank">DOUBAO</a>
+            <a href="https://chat.deepseek.com/" target="_blank">DEEPSEEK</a>
+        </nav>
+    </main>
+
+    <script>
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.getHours().toString().padStart(2, '0') + ':' + 
+                          now.getMinutes().toString().padStart(2, '0');
+            document.getElementById('clock').textContent = timeStr;
+            
+            const options = { month: 'long', day: 'numeric', year: 'numeric' };
+            document.getElementById('date').textContent = now.toLocaleDateString('en-US', options).toUpperCase();
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        const searchForm = document.getElementById('search-form');
+        const searchInput = document.getElementById('search-input');
+
+        // 定义搜索引擎映射表
+        const engines = {
+            'g': 'https://www.google.com/search?q=',
+            'b': 'https://search.bilibili.com/all?keyword=',
+            'gh': 'https://github.com/search?q=',
+            'w': 'https://zh.wikipedia.org/wiki/',
+            'e': 'https://www.bing.com/search?q='
+        };
+
+        searchForm.addEventListener('submit', (e) => {
+            e.preventDefault(); // 阻止表单默认提交刷新页面
+    
+            let rawInput = searchInput.value.trim();
+            if (!rawInput) return;
+
+            // 拆分前缀和关键词 (例如 "b 迷幻摇滚")
+            const parts = rawInput.split(' ');
+            const prefix = parts[0].toLowerCase();
+            const keyword = parts.slice(1).join(' ');
+
+            let targetUrl = '';
+
+            // 判断是否有匹配的前缀
+            if (engines[prefix] && parts.length > 1) {
+                targetUrl = engines[prefix] + encodeURIComponent(keyword);
+            } else {
+                // 如果没有前缀，默认使用 Google 搜索全部内容
+                targetUrl = engines['g'] + encodeURIComponent(rawInput);
+            }
+
+            window.location.href = targetUrl; // 在当前页跳转
+            // 如果想在新标签页打开，改用：window.open(targetUrl, '_blank');
+        });
+    </script>
+</body>
+</html>
