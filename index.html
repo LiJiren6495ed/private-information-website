@@ -78,6 +78,28 @@
             window.location.href = targetUrl; // 在当前页跳转
             // 如果想在新标签页打开，改用：window.open(targetUrl, '_blank');
         });
+
+        // 1. 配置：图片总数和路径
+        const totalImages = 14; // 如果你有 50 张图，就写 50
+        const imgPath = 'img/';
+
+        function setRandomBackground() {
+            // 2. 生成 1 到 totalImages 之间的随机整数
+            const randomIndex = Math.floor(Math.random() * totalImages) + 1;
+    
+            // 3. 拼接图片文件名
+            const selectedImg = imgPath + randomIndex + '.jpg';
+    
+            // 4. 动态修改 body 的背景
+            // 注意：这里保留了之前的黑色遮罩 linear-gradient，确保文字清晰
+            document.body.style.backgroundImage = `linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url('${selectedImg}')`;
+        }
+
+        // 5. 页面加载时立即执行
+        setRandomBackground();
+
+        // 如果你想要每隔一段时间自动换（比如 1 分钟换一张），可以解开下面这行：
+        // setInterval(setRandomBackground, 60000);
     </script>
 </body>
 </html>
