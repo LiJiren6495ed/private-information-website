@@ -1,216 +1,206 @@
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@700&display=swap');
-/* 定义本地字体 */
-@font-face {
-    font-family: 'Bedas'; /* 这是你自己起的名字 */
-    src: url('fonts/BebasNeue-1.otf') format('truetype'); /* 确保路径和文件名完全一致 */
-    font-weight: normal;
-    font-style: normal;
+:root {
+    --bf-orange: #ff8d1e;
+    --bf-bg-dark: rgba(20, 24, 28, 0.85);
+    --bf-text: #e0e0e0;
 }
 
-/* 修改全局字体引用 */
-:root {
-    --bg-color: #000000;
-    --main-color: #a1b6ca;
-    --text-color: #e0e0e0;
-    --bf-orange: #d4ccc3;
-    --font-main: 'Bedas', sans-serif; /* 使用刚才定义的名字 */
-}
+* { box-sizing: border-box; }
 
 body {
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    font-family: var(--font-main); /* 应用字体 */
     margin: 0;
     height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden;
-
+    /* 删除具体的 url(...)，交给 JS 处理 */
     background-color: #000; 
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
     background-attachment: fixed;
     
-    /* 添加一个过渡动画，让切换不那么突兀 */
-    transition: background-image 0.5s ease-in-out;
+    color: var(--bf-text);
+    font-family: 'Oswald', sans-serif;
+    display: flex;
+    
+    /* 添加一个平滑过渡，换图时不会太突兀 */
+    transition: background-image 1s ease-in-out;
 }
 
-/* 增加一层老唱片质感的噪点动画 */
+/* 噪点蒙版 */
 .grain-overlay {
     position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: url('https://www.transparenttextures.com/patterns/stardust.png');
-    opacity: 0.1;
-    pointer-events: none;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1; /* 确保在背景之上，内容之下 */
+    pointer-events: none; /* 让鼠标可以穿透它点击下面的按钮 */
+
+    /* 第一层：磨砂模糊 */
+    /* blur 数值越大，原图质量差的问题就隐藏得越深 */
+    backdrop-filter: blur(8px) brightness(0.8);
+    -webkit-backdrop-filter: blur(8px) brightness(0.8); /* 兼容 Safari */
+
+    /* 第二层：动态噪点/颗粒感 */
+    /* 这种微小的斜线纹理能有效掩盖图片马赛克 */
+    background-image: 
+        linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.6)), /* 基础蒙版 */
+        repeating-linear-gradient(
+            45deg,
+            rgba(255, 255, 255, 0.03) 0px,
+            rgba(255, 255, 255, 0.03) 1px,
+            transparent 1px,
+            transparent 2px
+        );
 }
 
-.container {
-    text-align: center;
-    z-index: 1;
+/* 左侧栏 */
+.sidebar {
+    width: 60px;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+    z-index: 10;
+    border-right: 1px solid rgba(255,255,255,0.05);
 }
 
-/* 时钟：巨大的重影感 */
-#clock {
-    font-size: 10rem; /* 网页端可以尽情放大 */
-    margin: 0;
-    color: var(--main-color);
-    
-    /* 制造出类似丝网印刷的错位重影效果 */
-    text-shadow: 
-        5px 5px 0px var(--bg-color), 
-        8px 8px 0px #323b44;
-    
-    letter-spacing: -2px;
-    line-height: 1;
-    text-transform: uppercase;
-    transition: all 0.5s ease;
+.icon {
+    margin: 15px 0;
+    font-size: 20px;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: 0.3s;
 }
 
-/* 鼠标悬停在时钟上时，产生轻微的缩放感 */
-#clock:hover {
+.icon.active, .icon:hover { opacity: 1; color: var(--bf-orange); }
+
+/* 主内容区 */
+.content {
+    flex: 1;
+    padding: 40px 60px;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 顶部导航 */
+.top-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+}
+
+.top-nav nav a {
+    color: var(--bf-text);
+    text-decoration: none;
+    margin-right: 30px;
+    font-weight: bold;
+    font-size: 1.1rem;
+    padding-bottom: 5px;
+    border-bottom: 3px solid transparent;
+}
+
+.top-nav nav a.active { border-bottom: 3px solid #fff; }
+
+/* 欢迎词 */
+.welcome-area h2 {
+    font-size: 2.5rem;
+    font-weight: 400;
+    letter-spacing: 2px;
+    margin-bottom: 30px;
+}
+
+/* 卡片布局 */
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.card {
+    height: 350px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.3s;
+    border: none;
+}
+
+.card:hover {
     transform: scale(1.02);
-    color: #fff;
-    text-shadow: 0 0 20px #323b44;
+    outline: 2px solid rgba(128, 128, 128, 0.8);
+    outline-offset: 0px; 
 }
 
-#date {
-    font-size: 1.2rem;
-    letter-spacing: 5px;
-    margin-top: -10px;
-    opacity: 0.7;
+.card-info {
+    position: absolute;
+    top: auto;
+    bottom: 0px;
+    left: 0;
+    right: 0;
+    margin-bottom: -2px;
+    background: rgba(0,0,0,0.7);
+    padding: 22px 20px 24px 20px;
+    backdrop-filter: blur(5px);
 }
 
-/* 搜索框：极简线条 */
-.search-section input {
+.card-info h3 { margin: 0; font-size: 1rem; color: #aaa; }
+.card-info p { margin: 5px 0 0; font-size: 1.2rem; }
+
+/* 底部行 */
+.bottom-row {
+    margin-top: 20px;
+    display: flex;
+    gap: 20px;
+}
+
+.mini-card {
+    height: 80px;
+    background: rgba(0,0,0,0.6);
+    border-bottom: 4px solid var(--bf-orange);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+}
+
+#clock {
+    font-family: 'Oswald', sans-serif;
+    font-size: 3rem; /* 从原来的默认大小增加到 3.5rem，甚至可以更大 */
+    font-weight: 700;  /* 加粗，更有力量感 */
+    color: #ffffffa5;
+    letter-spacing: 5px; /* 增加字符间距，更有现代战争 UI 的感觉 */
+    line-height: 1;
+    /* 加一点点微弱的橙色外发光，模拟仪表盘屏幕 */
+    text-shadow: 0 0 10px rgba(255, 141, 30, 0.3); 
+}
+
+.search-card { width: 400px; }
+.search-card input {
     background: transparent;
     border: none;
-    border-bottom: 2px solid var(--main-color);
     color: #fff;
     font-size: 1.5rem;
-    padding: 10px;
-    width: 400px;
-    text-align: center;
+    font-family: 'Oswald';
     outline: none;
-    margin-top: 50px;
-    transition: width 0.4s ease;
+    width: 100%;
 }
 
-.search-section input:focus {
-    width: 550px;
+/* 针对 B 站链接容器 */
+#bili-card {
+    background-size: cover;      /* 必须有 */
+    background-position: center;  /* 必须有 */
+    background-repeat: no-repeat;
 }
 
-/* 快捷入口 */
-.shortcuts {
-    margin-top: 40px;
-}
-
-.shortcuts a {
-    color: var(--text-color);
-    text-decoration: none;
-    margin: 0 15px;
-    font-size: 1.0rem;
-    transition: 0.3s;
-    border: 1px solid rgba(255,255,255,0.1);
-    padding: 5px 15px;
-}
-
-.shortcuts a:hover {
-    background: var(--main-color);
-    color: var(--bg-color);
-}
-
-.search-hint {
-    margin-top: 15px;
-    font-size: 1.1rem;
-    letter-spacing: 2px;
-    color: var(--main-color);
-    opacity: 0.3;
-    transition: opacity 0.3s;
-}
-
-.search-section input:focus + .search-hint {
-    opacity: 0.8;
-}
-
-/* 让输入框更有仪式感 */
-.search-section input::placeholder {
-    color: var(--main-color);
-    opacity: 0.4;
-    transition: opacity 0.3s;
-}
-
-.search-section input:focus::placeholder {
-    opacity: 0; /* 输入时让占位符消失 */
-}
-
-/* --- 响应式适配：针对手机等窄屏幕 (宽度小于 768px) --- */
-@media (max-width: 768px) {
-    #clock {
-        font-size: 5rem; /* 电脑上是 10rem，手机上缩小一半 */
-        letter-spacing: -1px;
-        text-shadow: 3px 3px 0px var(--bg-color), 5px 5px 0px rgba(165, 124, 82, 0.3);
-    }
-
-    #date {
-        font-size: 0.8rem;
-        letter-spacing: 3px;
-    }
-
-    .search-section input {
-        width: 80%; /* 宽度改用百分比，适配各种宽度的手机 */
-        font-size: 1.1rem;
-    }
-
-    .search-section input:focus {
-        width: 90%; /* 聚焦时不要撑得太满 */
-    }
-
-    .shortcuts {
-        display: flex;
-        flex-wrap: wrap; /* 如果按钮太多，自动换行 */
-        justify-content: center;
-        gap: 10px;
-    }
-
-    .shortcuts a {
-        margin: 5px;
-        font-size: 0.8rem;
-        padding: 8px 12px; /* 增加点击区域，方便手指操作 */
-    }
-}
-
-/* --- 针对超小屏幕 (宽度小于 480px，如小屏手机) --- */
-@media (max-width: 480px) {
-    #clock {
-        font-size: 3.5rem;
-    }
-    
-    .search-hint {
-        display: none; /* 屏幕太小时，隐藏掉搜索提示，保持清爽 */
-    }
-}
-
-#welcome-message {
-    font-family: 'Oswald', sans-serif;
+/* 针对“加载中”那个 p 标签 */
+#bili-title {
+    color: #aaa;           /* 直接指定为白色 */
+    margin: 5px 0 0;
     font-size: 1.2rem;
-    color: var(--bf-orange); /* 使用战地橙 */
-    letter-spacing: 4px;     /* 字母间距拉开，更有高级感 */
-    margin-top: 10px;
-    text-transform: uppercase;
-    
-    /* 装饰：加一个半透明的深色底，像军用标签 */
-    background: rgba(0, 0, 0, 0.4);
-    display: inline-block;
-    padding: 5px 20px;
-    border-right: 3px solid var(--bf-orange); /* 右侧加一根橙色小竖线 */
-    
-    /* 动画：让它稍微有点闪烁感，模仿电台接收 */
-    animation: blink 4s infinite;
-}
-
-@keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.7; }
+    /* 如果原图质量差，给文字加点阴影能增加可读性 */
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.8); 
 }

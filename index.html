@@ -2,126 +2,80 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
+    <meta name="referrer" content="no-referrer">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Cyber Poster</title>
+    <title>BF1 Command Center</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="grain-overlay"></div>
 
-    <main class="container">
-        <section class="time-section">
-            <h1 id="clock">00:00</h1>
-            <p id="date">MARCH 23, 2026</p>
-            <p id="welcome-message">WAITING FOR COMMAND...</p>
+    <aside class="sidebar">
+        <div class="nav-icons">
+            <div class="icon active">🛡️</div>
+            <div class="icon">🔥</div>
+            <div class="icon">🎯</div>
+            <div class="icon">👤</div>
+        </div>
+        <div class="bottom-icons">
+            <div class="icon">❓</div>
+            <div class="icon">⏻</div>
+        </div>
+    </aside>
+
+    <main class="content">
+        <header class="top-nav">
+            <nav>
+                <a href="#" class="active">首页</a>
+                <a href="#">多人模式</a>
+                <a href="#">战役</a>
+                <a href="#">士兵</a>
+                <a href="#">商店</a>
+                <a href="#">更多</a>
+            </nav>
+            <div class="logo">LIJIREN 6495ED</div>
+        </header>
+
+        <section class="welcome-area">
+            <h2 id="welcome-text">士兵, 午安。</h2>
         </section>
 
-        <section class="search-section">
-            <form id="search-form">
-                <input type="text" id="search-input" placeholder="TYPE TO SEARCH..." autocomplete="off" autofocus>
-            </form>
-            <p class="search-hint">G: Google / B: Bilibili / GH: Github / W: Wiki / E: Bing</p>
+        <section class="card-grid">
+            <a href="https://www.bilibili.com" id="bili-link" target="_blank" style="text-decoration: none;">
+                <div class="card big" id="bili-card">
+                    <div class="card-info">
+                        <h3 id="bili-tag">哔哩哔哩 · 热门</h3>
+                        <p id="bili-title">加载中...</p>
+                    </div>
+                </div>
+            </a>
+            <div class="card big" style="background-image: url('img/2.jpg')">
+                <div class="card-info">
+                    <h3>征服</h3>
+                    <p>所有地图</p>
+                </div>
+            </div>
+            <div class="card big highlight">
+                <div class="card-info">
+                    <h3>行动战役</h3>
+                    <p>加里波利</p>
+                </div>
+            </div>
         </section>
 
-        <nav class="shortcuts">
-            <a href="https://gemini.google.com/app?hl=zh-cn/" target="_blank">GEMINI</a>
-            <a href="https://www.doubao.com/" target="_blank">DOUBAO</a>
-            <a href="https://chat.deepseek.com/" target="_blank">DEEPSEEK</a>
-        </nav>
+        <section class="bottom-row">
+            <div class="mini-card search-card">
+                <form id="search-form">
+                    <input type="text" id="search-input" placeholder="等待指令...">
+                </form>
+            </div>
+            <div class="mini-card clock-card">
+                <div id="clock">00:00</div>
+            </div>
+        </section>
     </main>
 
-    <script>
-        function updateClock() {
-            const now = new Date();
-            const timeStr = now.getHours().toString().padStart(2, '0') + ':' + 
-                          now.getMinutes().toString().padStart(2, '0');
-            document.getElementById('clock').textContent = timeStr;
-            
-            const options = { month: 'long', day: 'numeric', year: 'numeric' };
-            document.getElementById('date').textContent = now.toLocaleDateString('en-US', options).toUpperCase();
-        }
-        setInterval(updateClock, 1000);
-        updateClock();
-
-        function updateWelcomeMessage() {
-            const day = new Date().getDay();
-            const baseMessages = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
-            const suffixes = ["，欢迎回来。", "，辛苦了。", "，状态不错。", "，准备行动。"];
-    
-            // 随机选一个后缀
-            const randomSuffix = suffixes[Math.floor(Math.random() * suffixes.length)];
-    
-            // 如果是周六，特供文案
-            if (day === 6) {
-                document.getElementById('welcome-message').textContent = "快乐星期六，好好放松一下！";
-            } else if (day === 1) {
-                document.getElementById('welcome-message').textContent = "星期一，新的勋章在等着你。";
-            } else {
-                document.getElementById('welcome-message').textContent = baseMessages[day] + randomSuffix;
-            }
-        }
-        
-        // 记得在页面加载时调用
-        updateWelcomeMessage();
-
-        const searchForm = document.getElementById('search-form');
-        const searchInput = document.getElementById('search-input');
-
-        // 定义搜索引擎映射表
-        const engines = {
-            'g': 'https://www.google.com/search?q=',
-            'b': 'https://search.bilibili.com/all?keyword=',
-            'gh': 'https://github.com/search?q=',
-            'w': 'https://zh.wikipedia.org/wiki/',
-            'e': 'https://www.bing.com/search?q='
-        };
-
-        searchForm.addEventListener('submit', (e) => {
-            e.preventDefault(); // 阻止表单默认提交刷新页面
-    
-            let rawInput = searchInput.value.trim();
-            if (!rawInput) return;
-
-            // 拆分前缀和关键词 (例如 "b 迷幻摇滚")
-            const parts = rawInput.split(' ');
-            const prefix = parts[0].toLowerCase();
-            const keyword = parts.slice(1).join(' ');
-
-            let targetUrl = '';
-
-            // 判断是否有匹配的前缀
-            if (engines[prefix] && parts.length > 1) {
-                targetUrl = engines[prefix] + encodeURIComponent(keyword);
-            } else {
-                // 如果没有前缀，默认使用 Google 搜索全部内容
-                targetUrl = engines['g'] + encodeURIComponent(rawInput);
-            }
-
-            window.location.href = targetUrl; // 在当前页跳转
-            // 如果想在新标签页打开，改用：window.open(targetUrl, '_blank');
-        });
-
-        // 1. 配置：图片总数和路径
-        const totalImages = 14; // 如果你有 50 张图，就写 50
-        const imgPath = 'img/';
-
-        function setRandomBackground() {
-            // 2. 生成 1 到 totalImages 之间的随机整数
-            const randomIndex = Math.floor(Math.random() * totalImages) + 1;
-    
-            // 3. 拼接图片文件名
-            const selectedImg = imgPath + randomIndex + '.jpg';
-    
-            // 4. 动态修改 body 的背景
-            // 注意：这里保留了之前的黑色遮罩 linear-gradient，确保文字清晰
-            document.body.style.backgroundImage = `linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url('${selectedImg}')`;
-        }
-
-        // 5. 页面加载时立即执行
-        setRandomBackground();
-
-        // 如果你想要每隔一段时间自动换（比如 1 分钟换一张），可以解开下面这行：
-        // setInterval(setRandomBackground, 60000);
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
