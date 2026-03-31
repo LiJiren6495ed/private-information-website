@@ -58,11 +58,22 @@ body {
     background: rgba(0, 0, 0, 0.6);
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
     padding: 20px 0;
+    gap: 5px;
     z-index: 10;
     border-right: 1px solid rgba(255,255,255,0.05);
+}
+
+.sidebar-bottom {
+    margin-top: auto !important; 
+    
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-bottom: 20px;
 }
 
 .icon {
@@ -203,4 +214,67 @@ body {
     font-size: 1.2rem;
     /* 如果原图质量差，给文字加点阴影能增加可读性 */
     text-shadow: 1px 1px 2px rgba(0,0,0,0.8); 
+}
+
+#git-card {
+    background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.6)), 
+                      url('img/git.avif'); 
+    
+    background-size: cover;      /* 图片铺满 */
+    background-position: center; /* 居中对齐 */
+    position: relative;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+}
+
+#git-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.5)), 
+                      url('img/git.avif');
+}
+
+#git-title {
+    color: #aaa;           /* 直接指定为白色 */
+    margin: 5px 0 0;
+    font-size: 1.2rem;
+    /* 如果原图质量差，给文字加点阴影能增加可读性 */
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.8); 
+}
+
+/* 侧边栏图标的基础样式 */
+.ai-icon {
+    font-style: normal;
+    font-weight: 800;
+    font-family: 'Oswald', sans-serif; /* 使用战地风格字体 */
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.6);
+    transition: all 0.3s ease;
+}
+
+/* 链接的基础样式，确保没有下划线 */
+.nav-item {
+    color: rgba(255, 255, 255, 0.6);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    vertical-align: middle;
+    justify-content: center;
+    width: 45px;
+    height: 40px;
+    margin: 10px 0;
+    border-left: 3px solid transparent; /* 预留左侧高亮条 */
+    transition: all 0.3s ease;
+}
+
+/* Hover 时的特效：战地橘色高亮 */
+.nav-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-left: 3px solid #ff6600; /* 战地经典的橙色 */
+}
+
+.nav-item:hover .ai-icon {
+    color: #fff;
+    transform: scale(1.1);
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
 }

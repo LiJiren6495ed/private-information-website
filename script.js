@@ -97,4 +97,4 @@ async function refreshBiliCover() {
 // 立即执行一次
 refreshBiliCover();
 // 每 30 秒换一个热门封面，保持新鲜感
-setInterval(refreshBiliCover, 30000);
+setInterval(refreshBiliCover, 60000);
