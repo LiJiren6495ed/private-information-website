@@ -129,7 +129,8 @@ async function refreshBiliCover() {
         // 如果有缓存内容，不覆盖——用户已经看到缓存内容了
         if (!cached) {
             title.textContent = '无法连接至情报总部';
-            card.style.backgroundImage = 'linear-gradient(145deg, #2d1b00, #0d1117)';
+            // 黑暗底色，让小电视装饰显现出来
+            card.style.backgroundImage = 'linear-gradient(145deg, #1a0f1a 0%, #0a0a0a 70%)';
         }
     }
 }
@@ -315,7 +316,7 @@ async function refreshWeather() {
                 document.getElementById(`${city.id}-wind`).textContent  = d[city.id].wind;
             }
             document.getElementById('weather-update').textContent = d.update;
-            card.style.backgroundImage = d.bg;
+            // 背景由 CSS 固定，不需要从缓存恢复
         } catch (_) {}
     }
 
@@ -341,13 +342,14 @@ async function refreshWeather() {
             };
         }
 
-        // 根据温度选背景色（暖色/冷色）
-        const avgTemp = results.reduce((s, r, i) => s + r.current_weather.temperature, 0) / results.length;
-        const bg = avgTemp > 25
-            ? 'linear-gradient(145deg, #e07020 0%, #8b3a0e 35%, #1a0a0a 70%)'
-            : avgTemp > 10
-            ? 'linear-gradient(145deg, #3a7ca5 0%, #1a3a5c 35%, #0a0a1a 70%)'
-            : 'linear-gradient(145deg, #5a7a9a 0%, #2a3a5a 35%, #0a0a1a 70%)';
+        // 根据温度选底部色条颜色
+        const avgTemp = results.reduce((s, r) => s + r.current_weather.temperature, 0) / results.length;
+        const accentColor = avgTemp > 30 ? '#ff6b35'   // 酷热 → 炽橙
+                          : avgTemp > 25 ? '#e8a838'   // 热 → 金黄
+                          : avgTemp > 15 ? '#4a9eff'   // 温暖 → 亮蓝
+                          : avgTemp > 5  ? '#6ab0d4'   // 凉爽 → 淡蓝
+                          :                '#8ab4f8';  // 冷 → 冰蓝
+        card.style.borderBottom = `4px solid ${accentColor}`;
 
         // 更新时间
         const now = new Date();
@@ -361,10 +363,9 @@ async function refreshWeather() {
             document.getElementById(`${city.id}-wind`).textContent = data[city.id].wind;
         }
         document.getElementById('weather-update').textContent = `🕐 ${timeStr} 更新`;
-        card.style.backgroundImage = bg;
 
         // 缓存
-        const cacheData = { title: '🌤 天气情报 · 双城', update: `🕐 ${timeStr} 更新`, bg: bg };
+        const cacheData = { title: '🌤 天气情报 · 双城', update: `🕐 ${timeStr} 更新` };
         for (const city of CITIES) cacheData[city.id] = data[city.id];
         localStorage.setItem('weather_cache', JSON.stringify(cacheData));
 
@@ -378,7 +379,6 @@ async function refreshWeather() {
                 document.getElementById(`${city.id}-wind`).textContent = '💨 --km/h';
             }
             document.getElementById('weather-update').textContent = '🕐 获取失败';
-            card.style.backgroundImage = 'linear-gradient(145deg, #2d1b00, #0d1117)';
         }
     }
 }

@@ -202,9 +202,27 @@ body {
 
 /* 针对 B 站链接容器 */
 #bili-card {
-    background-size: cover;      /* 必须有 */
-    background-position: center;  /* 必须有 */
+    background-size: cover;
+    background-position: center;
     background-repeat: no-repeat;
+    position: relative;
+}
+
+/* 小电视装饰 — 永远显示，加载失败时不至于空荡荡 */
+.bili-tv-deco {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -60%);
+    opacity: 0.06;
+    color: #fff;
+    pointer-events: none;
+    z-index: 0;
+    transition: opacity 0.5s ease;
+}
+
+#bili-card:hover .bili-tv-deco {
+    opacity: 0.12;
 }
 
 /* 针对“加载中”那个 p 标签 */
@@ -303,11 +321,25 @@ body {
     position: relative;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     overflow: hidden;
+    background-image: linear-gradient(145deg, #1a1a2e 0%, #0d0d1a 70%);
 }
 
 #weather-card:hover {
     transform: translateY(-3px);
     box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+}
+
+/* 温度色条 — 由 JS 控制颜色 */
+#weather-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: #ff8d1e; /* 默认战地橙，JS 会覆盖 */
+    transition: background 0.5s ease;
+    z-index: 2;
 }
 
 #weather-card .card-info {
@@ -326,7 +358,7 @@ body {
 }
 
 #weather-title {
-    color: #7ec8e3 !important;
+    color: #e8c66a !important;  /* 暖金色，不论冷暖背景都搭 */
     font-size: 1.1rem !important;
     letter-spacing: 2px;
     margin-bottom: 16px !important;
