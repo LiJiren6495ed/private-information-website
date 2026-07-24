@@ -113,6 +113,7 @@ async function refreshBiliCover() {
         img.onload = () => {
             // 图片加载成功 → 换上带图片的背景
             card.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.6)), url('${proxiedImg}')`;
+            card.classList.remove('fallback');
         };
         // 图片加载失败的话…卡面还是那个渐变，不会空白
         img.src = proxiedImg;
@@ -131,6 +132,7 @@ async function refreshBiliCover() {
             title.textContent = '无法连接至情报总部';
             // 黑暗底色，让小电视装饰显现出来
             card.style.backgroundImage = 'linear-gradient(145deg, #1a0f1a 0%, #0a0a0a 70%)';
+            card.classList.add('fallback');
         }
     }
 }
@@ -344,11 +346,19 @@ async function refreshWeather() {
 
         // 根据温度选底部色条颜色
         const avgTemp = results.reduce((s, r) => s + r.current_weather.temperature, 0) / results.length;
-        const accentColor = avgTemp > 30 ? '#ff6b35'   // 酷热 → 炽橙
-                          : avgTemp > 25 ? '#e8a838'   // 热 → 金黄
+        const accentColor = avgTemp > 30 ? '#ff5a00'   // 酷热 → 炽橙
+                          : avgTemp > 25 ? '#ffb800'   // 热 → 亮金
                           : avgTemp > 15 ? '#4a9eff'   // 温暖 → 亮蓝
                           : avgTemp > 5  ? '#6ab0d4'   // 凉爽 → 淡蓝
                           :                '#8ab4f8';  // 冷 → 冰蓝
+
+        // 根据温度设背景渐变色 — 顶部带温度色晕，底部沉下去
+        const bgGrad = avgTemp > 25
+            ? 'linear-gradient(145deg, #4d2208 0%, #1a0e00 45%, #050505 70%)'
+            : avgTemp > 10
+            ? 'linear-gradient(145deg, #0a1a3d 0%, #050e1a 45%, #050505 70%)'
+            : 'linear-gradient(145deg, #0f1f3a 0%, #080e1a 45%, #050505 70%)';
+        card.style.backgroundImage = bgGrad;
         card.style.borderBottom = `4px solid ${accentColor}`;
 
         // 更新时间
@@ -379,6 +389,7 @@ async function refreshWeather() {
                 document.getElementById(`${city.id}-wind`).textContent = '💨 --km/h';
             }
             document.getElementById('weather-update').textContent = '🕐 获取失败';
+            card.style.backgroundImage = 'linear-gradient(145deg, #1a0a0a 0%, #0a0a0a 70%)';
         }
     }
 }
