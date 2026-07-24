@@ -96,5 +96,125 @@ async function refreshBiliCover() {
 
 // 立即执行一次
 refreshBiliCover();
-// 每 30 秒换一个热门封面，保持新鲜感
+// 每 60 秒换一个热门封面，保持新鲜感
 setInterval(refreshBiliCover, 60000);
+
+// =============================================
+// GitHub 趋势仓库 — 自生成预览卡片
+// =============================================
+
+/** 编程语言 -> GitHub 官方颜色 */
+const LANGUAGE_COLORS = {
+    'JavaScript': '#f1e05a',  'TypeScript': '#3178c6',
+    'Python': '#3572a5',      'Go': '#00add8',
+    'Rust': '#dea584',        'Java': '#b07219',
+    'C++': '#f34b7d',         'C': '#555555',
+    'C#': '#178600',          'Ruby': '#701516',
+    'PHP': '#4f5d95',         'Swift': '#f05138',
+    'Kotlin': '#a97bff',      'Dart': '#00b4ab',
+    'Shell': '#89e051',       'HTML': '#e34c26',
+    'CSS': '#563d7c',         'Vue': '#41b883',
+    'Solidity': '#aa6746',    'Zig': '#ec915c',
+    'Lua': '#000080',         'Scala': '#c22d40',
+    'Elixir': '#6e4a7e',      'Haskell': '#5e5086',
+    'Markdown': '#083fa1',    'TeX': '#3d6117',
+    'Jupyter Notebook': '#DA5B0B',
+};
+
+/** 格式化 Star 数 (1200 -> 1.2k) */
+function formatStars(n) {
+    if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+    return String(n);
+}
+
+/** 根据语言色生成渐变背景 — 这就是自生成"预览图" */
+function buildLangGradient(langColor) {
+    // 如果没有语言色，用默认战地橙
+    const c = langColor || '#ff8d1e';
+    return [
+        `linear-gradient(145deg, ${c}99 0%, ${c}44 40%, #0d1117 75%)`,
+        `repeating-linear-gradient(45deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, transparent 1px, transparent 3px)`,
+    ].join(', ');
+}
+
+/** 获取 GitHub 趋势仓库并更新卡片 */
+async function refreshGithubTrending() {
+    const card        = document.getElementById('git-card');
+    const tag         = document.getElementById('git-tag');
+    const title       = document.getElementById('git-title');
+    const desc        = document.getElementById('repo-desc');
+    const starsEl     = document.getElementById('repo-stars');
+    const forksEl     = document.getElementById('repo-forks');
+    const langDot     = document.getElementById('lang-dot');
+    const langName    = document.getElementById('lang-name');
+
+    // 计算 7 天前的日期
+    const date = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const dateStr = date.toISOString().split('T')[0];
+
+    tag.textContent = '⟳ GITHUB 趋势';
+
+    try {
+        const headers = { 'Accept': 'application/vnd.github.v3+json' };
+        const token = localStorage.getItem('github_token');
+        if (token) headers['Authorization'] = `token ${token}`;
+
+        const res = await fetch(
+            `https://api.github.com/search/repositories?q=created:>${dateStr}&sort=stars&order=desc&per_page=25`,
+            { headers }
+        );
+
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        const data = await res.json();
+        if (!data.items || data.items.length === 0) throw new Error('没有数据');
+
+        // 从 top25 中随机挑一个，每次刷新都有新鲜感
+        const repo = data.items[Math.floor(Math.random() * data.items.length)];
+
+        const fullName    = repo.full_name;           // owner/repo
+        const description = repo.description || '暂无描述';
+        const stars       = formatStars(repo.stargazers_count);
+        const forks       = formatStars(repo.forks_count);
+        const language    = repo.language || '未知';
+        const langColor   = LANGUAGE_COLORS[language] || '#888';
+
+        // 设置自生成预览背景
+        card.style.backgroundImage = buildLangGradient(langColor);
+
+        // 更新内容
+        tag.textContent      = `🔥 GITHUB 趋势 · ${language}`;
+        title.textContent    = fullName;
+        desc.textContent     = description;
+        starsEl.innerHTML    = `★ ${stars}`;
+        forksEl.innerHTML    = `⑂ ${forks}`;
+        langDot.style.background = langColor;
+        langName.textContent = language;
+
+        // 存下跳转链接
+        card.dataset.repoUrl = repo.html_url;
+
+    } catch (err) {
+        console.error('GitHub 趋势获取失败:', err);
+        card.style.backgroundImage = 'linear-gradient(145deg, #2d1b00, #0d1117)';
+        tag.textContent      = '⚠️ GITHUB 趋势';
+        title.textContent    = '情报中断';
+        desc.textContent     = '无法连接至 GitHub 情报总部';
+        starsEl.innerHTML    = '★ --';
+        forksEl.innerHTML    = '⑂ --';
+        langDot.style.background = '#888';
+        langName.textContent = '--';
+        card.dataset.repoUrl = 'https://github.com/trending';
+    }
+}
+
+// 点击卡片跳转到仓库
+document.getElementById('git-card').addEventListener('click', function () {
+    const url = this.dataset.repoUrl || 'https://github.com/trending';
+    window.open(url, '_blank');
+});
+
+// 初始化
+refreshGithubTrending();
+// 每 5 分钟刷新一次，跟上趋势
+setInterval(refreshGithubTrending, 300000);
