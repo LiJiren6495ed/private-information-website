@@ -61,7 +61,7 @@ async function refreshBiliCover() {
     const title = document.getElementById('bili-title');
 
     // ========== 第 1 步：先显示缓存内容（如果有），秒开 ==========
-    const cached = loca*************tem('bili_cache');
+    const cached = locatem('bili_cache');
     if (cached) {
         try {
             const data = JSON.parse(cached);
@@ -118,7 +118,7 @@ async function refreshBiliCover() {
         img.src = proxiedImg;
 
         // ========== 第 5 步：缓存本次结果 ==========
-        loca*************tem('bili_cache', JSON.stringify({
+        locatem('bili_cache', JSON.stringify({
             title: videoTitle,
             bg: card.style.backgroundImage,
             time: Date.now()
@@ -304,7 +304,7 @@ async function refreshWeather() {
     const card  = document.getElementById('weather-card');
 
     // ========== 第 1 步：读缓存秒开 ==========
-    const cached = loca*************tem('weather_cache');
+    const cached = locatem('weather_cache');
     if (cached) {
         try {
             const d = JSON.parse(cached);
@@ -366,7 +366,7 @@ async function refreshWeather() {
         // 缓存
         const cacheData = { title: '🌤 天气情报 · 双城', update: `🕐 ${timeStr} 更新`, bg: bg };
         for (const city of CITIES) cacheData[city.id] = data[city.id];
-        loca*************tem('weather_cache', JSON.stringify(cacheData));
+        locatem('weather_cache', JSON.stringify(cacheData));
 
     } catch (err) {
         console.error('天气获取失败:', err);
