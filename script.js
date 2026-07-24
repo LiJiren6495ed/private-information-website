@@ -60,37 +60,77 @@ async function refreshBiliCover() {
     const card = document.getElementById('bili-card');
     const title = document.getElementById('bili-title');
 
+    // ========== 第 1 步：先显示缓存内容（如果有），秒开 ==========
+    const cached = loca*************tem('bili_cache');
+    if (cached) {
+        try {
+            const data = JSON.parse(cached);
+            title.textContent = data.title;
+            card.style.backgroundImage = data.bg;
+        } catch (_) { /* 缓存坏了就当没有 */ }
+    }
+
+    // ========== 第 2 步：后台获取最新数据 ==========
     try {
-        // 使用 allorigins 代理绕过 B 站 API 的跨域限制
-        const proxy = 'https://api.allorigins.win/get?url=';
-        const target = encodeURIComponent('https://api.bilibili.com/x/web-interface/popular?ps=20');
-        
-        const response = await fetch(proxy + target);
-        const json = await response.json();
-        const data = JSON.parse(json.contents);
-        
-        // 修改 refreshBiliCover 函数中的图片路径部分
-        if (data.code === 0) {
-            const list = data.data.list;
-            const randomVideo = list[Math.floor(Math.random() * list.length)];
+        // 备选代理列表，一个不行自动换下一个
+        const proxies = [
+            (url) => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+            (url) => `https://corsproxy.io/?url=${encodeURIComponent(url)}`,
+            (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+        ];
 
-            // 1. 获取原图地址并去掉协议头
-            let originalPic = randomVideo.pic.replace(/https?:\/\//, "");
+        const biliUrl = 'https://api.bilibili.com/x/web-interface/popular?ps=20';
+        let data = null;
 
-            // 2. 使用 Weserv 代理（它是专门做这个的，非常稳定）
-            // 语法：https://images.weserv.nl/?url=[图片地址]
-            const proxiedPicUrl = `https://images.weserv.nl/?url=${encodeURIComponent(originalPic)}`;
-
-            // 3. 应用背景
-            card.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.6)), url('${proxiedPicUrl}')`;
-    
-            // 更新标题
-            title.textContent = randomVideo.title;
-            title.classList.remove('loading-text');
+        for (const buildProxy of proxies) {
+            try {
+                const resp = await fetch(buildProxy(biliUrl), { signal: AbortSignal.timeout(5000) });
+                if (!resp.ok) continue;
+                const json = await resp.json();
+                const parsed = json.contents ? JSON.parse(json.contents) : json;
+                if (parsed.code === 0) { data = parsed; break; }
+            } catch (_) {
+                continue; // 这个代理不行，换下一个
+            }
         }
+
+        if (!data) throw new Error('所有代理均失败');
+
+        const list = data.data.list;
+        const video = list[Math.floor(Math.random() * list.length)];
+        const videoTitle = video.title;
+
+        // ========== 第 3 步：先上基础渐变，用户立刻能看到字 ==========
+        const fallbackBg = 'linear-gradient(145deg, #cc6699 0%, #1a0a1a 70%)';
+        card.style.backgroundImage = fallbackBg;
+        title.textContent = videoTitle;
+
+        // ========== 第 4 步：图片后台预加载，不阻塞显示 ==========
+        const imgUrl = video.pic.replace(/https?:\/\//, '');
+        const proxiedImg = `https://images.weserv.nl/?url=${encodeURIComponent(imgUrl)}`;
+
+        const img = new Image();
+        img.onload = () => {
+            // 图片加载成功 → 换上带图片的背景
+            card.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.6)), url('${proxiedImg}')`;
+        };
+        // 图片加载失败的话…卡面还是那个渐变，不会空白
+        img.src = proxiedImg;
+
+        // ========== 第 5 步：缓存本次结果 ==========
+        loca*************tem('bili_cache', JSON.stringify({
+            title: videoTitle,
+            bg: card.style.backgroundImage,
+            time: Date.now()
+        }));
+
     } catch (err) {
-        console.error("B站情报获取失败:", err);
-        title.textContent = "无法连接至情报总部";
+        console.error('B站情报获取失败:', err);
+        // 如果有缓存内容，不覆盖——用户已经看到缓存内容了
+        if (!cached) {
+            title.textContent = '无法连接至情报总部';
+            card.style.backgroundImage = 'linear-gradient(145deg, #2d1b00, #0d1117)';
+        }
     }
 }
 
@@ -218,3 +258,118 @@ document.getElementById('git-card').addEventListener('click', function () {
 refreshGithubTrending();
 // 每 5 分钟刷新一次，跟上趋势
 setInterval(refreshGithubTrending, 300000);
+
+// =============================================
+// 人民网要闻 — 新闻卡片
+// =============================================
+
+const NEWS_RSS = 'http://www.people.com.cn/rss/politics.xml';
+const RSS2JSON  = 'https://api.rss2json.com/v1/api.json';
+
+async function refreshNewsCard() {
+    const card   = document.getElementById('news-card');
+    const tag    = document.getElementById('news-tag');
+    const title  = document.getElementById('news-title');
+    const desc   = document.getElementById('news-desc');
+    const source = document.getElementById('news-source');
+    const time   = document.getElementById('news-time');
+
+    // ========== 第 1 步：先显示缓存，秒开 ==========
+    const cached = loca*************tem('news_cache');
+    if (cached) {
+        try {
+            const d = JSON.parse(cached);
+            tag.textContent    = d.tag;
+            title.textContent  = d.title;
+            desc.textContent   = d.desc;
+            source.textContent = d.source;
+            time.textContent   = d.time;
+            card.style.backgroundImage = d.bg;
+            card.dataset.newsUrl = d.url;
+        } catch (_) {}
+    }
+
+    // ========== 第 2 步：后台获取最新 ==========
+    try {
+        const resp = await fetch(
+            `${RSS2JSON}?rss_url=${encodeURIComponent(NEWS_RSS)}`,
+            { signal: AbortSignal.timeout(8000) }
+        );
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const data = await resp.json();
+        if (data.status !== 'ok' || !data.items || data.items.length === 0)
+            throw new Error('没有数据');
+
+        const articles = data.items;
+        const article = articles[Math.floor(Math.random() * Math.min(articles.length, 8))];
+
+        // 标题（去空）
+        const artTitle = (article.title || '无标题').replace(/^\s*\[[^\]]*\]\s*/, '');
+        // 摘要（取内容前一段）
+        const artDesc = (article.description || '')
+            .replace(/<[^>]+>/g, '')       // 去 HTML 标签
+            .replace(/&nbsp;/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .slice(0, 100) + '...';
+        // 来源
+        const artSource = article.author || '人民网';
+        // 发布时间
+        const pubDate = article.pubDate ? new Date(article.pubDate) : new Date();
+        const timeAgo = formatTimeAgo(pubDate);
+        // 链接
+        const artUrl = article.link || 'http://www.people.com.cn';
+        // 背景 — 红金渐变，呼应人民网风格
+        const bg = 'linear-gradient(145deg, #8b1a1a 0%, #4a0e0e 35%, #1a0a0a 70%)';
+
+        // 更新 DOM
+        tag.textContent    = '📰 人民网 · 要闻';
+        title.textContent  = artTitle;
+        desc.textContent   = artDesc;
+        source.textContent = `📡 ${artSource}`;
+        time.textContent   = `🕐 ${timeAgo}`;
+        card.style.backgroundImage = bg;
+        card.dataset.newsUrl = artUrl;
+
+        // 缓存
+        loca*************tem('news_cache', JSON.stringify({
+            tag: tag.textContent, title: artTitle, desc: artDesc,
+            source: `📡 ${artSource}`, time: `🕐 ${timeAgo}`,
+            bg: bg, url: artUrl
+        }));
+
+    } catch (err) {
+        console.error('新闻获取失败:', err);
+        if (!cached) {
+            tag.textContent    = '⚠️ 新闻中断';
+            title.textContent  = '无法连接至新闻总部';
+            desc.textContent   = '请检查网络连接';
+            source.textContent = '📡 --';
+            time.textContent   = '🕐 --';
+            card.style.backgroundImage = 'linear-gradient(145deg, #2d1b00, #0d1117)';
+        }
+    }
+}
+
+/** 格式化相对时间（如"3小时前"） */
+function formatTimeAgo(date) {
+    const diff = Date.now() - date.getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1)   return '刚刚';
+    if (mins < 60)  return `${mins}分钟前`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24)   return `${hrs}小时前`;
+    const days = Math.floor(hrs / 24);
+    return `${days}天前`;
+}
+
+// 点击新闻卡片跳转
+document.getElementById('news-card').addEventListener('click', function () {
+    const url = this.dataset.newsUrl || 'http://www.people.com.cn';
+    window.open(url, '_blank');
+});
+
+// 初始化
+refreshNewsCard();
+// 每 10 分钟刷新新闻
+setInterval(refreshNewsCard, 600000);

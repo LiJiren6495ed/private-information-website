@@ -298,6 +298,39 @@ body {
     background: rgba(0,0,0,0.85);
 }
 
+/* ===== 新闻卡片 ===== */
+#news-card {
+    position: relative;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+}
+
+#news-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+}
+
+#news-card .card-info {
+    padding: 20px 20px 22px 20px;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    transition: background 0.3s ease;
+}
+
+#news-card:hover .card-info {
+    background: rgba(0,0,0,0.85);
+}
+
+#news-tag {
+    color: #ff6b6b !important;
+    letter-spacing: 1px;
+}
+
+#news-source {
+    color: #ff9999;
+}
+
 /* 侧边栏图标的基础样式 */
 .ai-icon {
     font-style: normal;
