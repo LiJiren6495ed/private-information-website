@@ -260,116 +260,130 @@ refreshGithubTrending();
 setInterval(refreshGithubTrending, 300000);
 
 // =============================================
-// 人民网要闻 — 新闻卡片
+// 双城天气预报
 // =============================================
 
-const NEWS_RSS = 'http://www.people.com.cn/rss/politics.xml';
-const RSS2JSON  = 'https://api.rss2json.com/v1/api.json';
+/** WMO 天气代码 → 中文描述 + emoji */
+const WMO_CODES = {
+    0:  ['☀️', '晴'],
+    1:  ['🌤', '晴间多云'],
+    2:  ['⛅', '多云'],
+    3:  ['☁️', '阴'],
+    45: ['🌫', '雾'],
+    48: ['🌫', '雾'],
+    51: ['🌦', '小雨'],
+    53: ['🌦', '中雨'],
+    55: ['🌧', '大雨'],
+    56: ['🌧', '冻雨'],
+    57: ['🌧', '冻雨'],
+    61: ['🌧', '小雨'],
+    63: ['🌧', '中雨'],
+    65: ['🌧', '大雨'],
+    66: ['🌧', '冻雨'],
+    67: ['❄️', '冻雨'],
+    71: ['❄️', '小雪'],
+    73: ['❄️', '中雪'],
+    75: ['❄️', '大雪'],
+    77: ['❄️', '雪粒'],
+    80: ['🌦', '阵雨'],
+    81: ['🌦', '阵雨'],
+    82: ['🌧', '大阵雨'],
+    85: ['❄️', '阵雪'],
+    86: ['❄️', '大阵雪'],
+    95: ['⛈', '雷暴'],
+    96: ['⛈', '雷暴'],
+    99: ['⛈', '雷暴'],
+};
 
-async function refreshNewsCard() {
-    const card   = document.getElementById('news-card');
-    const tag    = document.getElementById('news-tag');
-    const title  = document.getElementById('news-title');
-    const desc   = document.getElementById('news-desc');
-    const source = document.getElementById('news-source');
-    const time   = document.getElementById('news-time');
+const CITIES = [
+    { id: 'xa', name: '西安', lat: 34.26, lon: 108.94 },
+    { id: 'ta', name: '泰安', lat: 36.19, lon: 117.13 },
+];
 
-    // ========== 第 1 步：先显示缓存，秒开 ==========
-    const cached = loca*************tem('news_cache');
+async function refreshWeather() {
+    const card  = document.getElementById('weather-card');
+
+    // ========== 第 1 步：读缓存秒开 ==========
+    const cached = loca*************tem('weather_cache');
     if (cached) {
         try {
             const d = JSON.parse(cached);
-            tag.textContent    = d.tag;
-            title.textContent  = d.title;
-            desc.textContent   = d.desc;
-            source.textContent = d.source;
-            time.textContent   = d.time;
+            document.getElementById('weather-title').textContent = d.title;
+            for (const city of CITIES) {
+                document.getElementById(`${city.id}-temp`).textContent  = d[city.id].temp;
+                document.getElementById(`${city.id}-desc`).textContent  = d[city.id].desc;
+                document.getElementById(`${city.id}-wind`).textContent  = d[city.id].wind;
+            }
+            document.getElementById('weather-update').textContent = d.update;
             card.style.backgroundImage = d.bg;
-            card.dataset.newsUrl = d.url;
         } catch (_) {}
     }
 
-    // ========== 第 2 步：后台获取最新 ==========
+    // ========== 第 2 步：后台获取两个城市天气 ==========
     try {
-        const resp = await fetch(
-            `${RSS2JSON}?rss_url=${encodeURIComponent(NEWS_RSS)}`,
-            { signal: AbortSignal.timeout(8000) }
-        );
-        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-        const data = await resp.json();
-        if (data.status !== 'ok' || !data.items || data.items.length === 0)
-            throw new Error('没有数据');
+        const results = await Promise.all(CITIES.map(city =>
+            fetch(
+                `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}&current_weather=true&timezone=Asia/Shanghai`,
+                { signal: AbortSignal.timeout(5000) }
+            ).then(r => r.json())
+        ));
 
-        const articles = data.items;
-        const article = articles[Math.floor(Math.random() * Math.min(articles.length, 8))];
+        // 处理每个城市数据
+        const data = {};
+        for (let i = 0; i < CITIES.length; i++) {
+            const w = results[i].current_weather;
+            const code = w.weathercode;
+            const [emoji, desc] = WMO_CODES[code] || ['❓', '未知'];
+            data[CITIES[i].id] = {
+                temp: `${emoji} ${Math.round(w.temperature)}°C`,
+                desc: desc,
+                wind: `💨 ${Math.round(w.windspeed)}km/h`,
+            };
+        }
 
-        // 标题（去空）
-        const artTitle = (article.title || '无标题').replace(/^\s*\[[^\]]*\]\s*/, '');
-        // 摘要（取内容前一段）
-        const artDesc = (article.description || '')
-            .replace(/<[^>]+>/g, '')       // 去 HTML 标签
-            .replace(/&nbsp;/g, ' ')
-            .replace(/\s+/g, ' ')
-            .trim()
-            .slice(0, 100) + '...';
-        // 来源
-        const artSource = article.author || '人民网';
-        // 发布时间
-        const pubDate = article.pubDate ? new Date(article.pubDate) : new Date();
-        const timeAgo = formatTimeAgo(pubDate);
-        // 链接
-        const artUrl = article.link || 'http://www.people.com.cn';
-        // 背景 — 红金渐变，呼应人民网风格
-        const bg = 'linear-gradient(145deg, #8b1a1a 0%, #4a0e0e 35%, #1a0a0a 70%)';
+        // 根据温度选背景色（暖色/冷色）
+        const avgTemp = results.reduce((s, r, i) => s + r.current_weather.temperature, 0) / results.length;
+        const bg = avgTemp > 25
+            ? 'linear-gradient(145deg, #e07020 0%, #8b3a0e 35%, #1a0a0a 70%)'
+            : avgTemp > 10
+            ? 'linear-gradient(145deg, #3a7ca5 0%, #1a3a5c 35%, #0a0a1a 70%)'
+            : 'linear-gradient(145deg, #5a7a9a 0%, #2a3a5a 35%, #0a0a1a 70%)';
+
+        // 更新时间
+        const now = new Date();
+        const timeStr = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
 
         // 更新 DOM
-        tag.textContent    = '📰 人民网 · 要闻';
-        title.textContent  = artTitle;
-        desc.textContent   = artDesc;
-        source.textContent = `📡 ${artSource}`;
-        time.textContent   = `🕐 ${timeAgo}`;
+        document.getElementById('weather-title').textContent = `🌤 天气情报 · 双城`;
+        for (const city of CITIES) {
+            document.getElementById(`${city.id}-temp`).textContent = data[city.id].temp;
+            document.getElementById(`${city.id}-desc`).textContent = data[city.id].desc;
+            document.getElementById(`${city.id}-wind`).textContent = data[city.id].wind;
+        }
+        document.getElementById('weather-update').textContent = `🕐 ${timeStr} 更新`;
         card.style.backgroundImage = bg;
-        card.dataset.newsUrl = artUrl;
 
         // 缓存
-        loca*************tem('news_cache', JSON.stringify({
-            tag: tag.textContent, title: artTitle, desc: artDesc,
-            source: `📡 ${artSource}`, time: `🕐 ${timeAgo}`,
-            bg: bg, url: artUrl
-        }));
+        const cacheData = { title: '🌤 天气情报 · 双城', update: `🕐 ${timeStr} 更新`, bg: bg };
+        for (const city of CITIES) cacheData[city.id] = data[city.id];
+        loca*************tem('weather_cache', JSON.stringify(cacheData));
 
     } catch (err) {
-        console.error('新闻获取失败:', err);
+        console.error('天气获取失败:', err);
         if (!cached) {
-            tag.textContent    = '⚠️ 新闻中断';
-            title.textContent  = '无法连接至新闻总部';
-            desc.textContent   = '请检查网络连接';
-            source.textContent = '📡 --';
-            time.textContent   = '🕐 --';
+            document.getElementById('weather-title').textContent = '🌤 天气情报';
+            for (const city of CITIES) {
+                document.getElementById(`${city.id}-temp`).textContent = '--°C';
+                document.getElementById(`${city.id}-desc`).textContent = '暂不可用';
+                document.getElementById(`${city.id}-wind`).textContent = '💨 --km/h';
+            }
+            document.getElementById('weather-update').textContent = '🕐 获取失败';
             card.style.backgroundImage = 'linear-gradient(145deg, #2d1b00, #0d1117)';
         }
     }
 }
 
-/** 格式化相对时间（如"3小时前"） */
-function formatTimeAgo(date) {
-    const diff = Date.now() - date.getTime();
-    const mins = Math.floor(diff / 60000);
-    if (mins < 1)   return '刚刚';
-    if (mins < 60)  return `${mins}分钟前`;
-    const hrs = Math.floor(mins / 60);
-    if (hrs < 24)   return `${hrs}小时前`;
-    const days = Math.floor(hrs / 24);
-    return `${days}天前`;
-}
-
-// 点击新闻卡片跳转
-document.getElementById('news-card').addEventListener('click', function () {
-    const url = this.dataset.newsUrl || 'http://www.people.com.cn';
-    window.open(url, '_blank');
-});
-
-// 初始化
-refreshNewsCard();
-// 每 10 分钟刷新新闻
-setInterval(refreshNewsCard, 600000);
+// 初始化 — 延迟 3 秒再请求，免得跟 B站/GitHub 抢连接
+setTimeout(refreshWeather, 3000);
+// 每 15 分钟更新一次
+setInterval(refreshWeather, 900000);

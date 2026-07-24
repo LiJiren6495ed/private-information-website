@@ -298,37 +298,89 @@ body {
     background: rgba(0,0,0,0.85);
 }
 
-/* ===== 新闻卡片 ===== */
-#news-card {
+/* ===== 天气卡片 ===== */
+#weather-card {
     position: relative;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     overflow: hidden;
 }
 
-#news-card:hover {
+#weather-card:hover {
     transform: translateY(-3px);
     box-shadow: 0 5px 15px rgba(0,0,0,0.5);
 }
 
-#news-card .card-info {
-    padding: 20px 20px 22px 20px;
+#weather-card .card-info {
+    padding: 20px 24px;
     background: rgba(0,0,0,0.75);
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
     transition: background 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
-#news-card:hover .card-info {
+#weather-card:hover .card-info {
     background: rgba(0,0,0,0.85);
 }
 
-#news-tag {
-    color: #ff6b6b !important;
+#weather-title {
+    color: #7ec8e3 !important;
+    font-size: 1.1rem !important;
+    letter-spacing: 2px;
+    margin-bottom: 16px !important;
+}
+
+/* 双城布局：左右两列 */
+.weather-grid {
+    display: flex;
+    gap: 24px;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+}
+
+.weather-city {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.city-label {
+    font-size: 0.9rem;
+    color: #aaa;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+}
+
+.weather-temp {
+    font-size: 2.8rem;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1;
     letter-spacing: 1px;
 }
 
-#news-source {
-    color: #ff9999;
+.weather-desc {
+    font-size: 0.9rem;
+    color: #ccc;
+    margin-top: 4px;
+}
+
+.weather-wind {
+    font-size: 0.75rem;
+    color: #999;
+}
+
+/* 底部更新时间 */
+.weather-footer {
+    text-align: center;
+    margin-top: 12px;
+    font-size: 0.75rem;
+    color: #888;
 }
 
 /* 侧边栏图标的基础样式 */
