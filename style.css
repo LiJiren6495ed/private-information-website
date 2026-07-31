@@ -17,7 +17,7 @@ body {
     background-attachment: fixed;
     
     color: var(--bf-text);
-    font-family: 'Oswald', sans-serif;
+    font-family: 'Oswald', 'SimSun', '宋体', serif;
     display: flex;
     
     /* 添加一个平滑过渡，换图时不会太突兀 */
@@ -123,6 +123,135 @@ body {
     margin-bottom: 30px;
 }
 
+/* ===== 视图切换 ===== */
+.view { display: none; }
+.view.active { display: block; }
+
+/* ===== 收藏网格 ===== */
+.link-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 16px;
+}
+
+.link-card {
+    background: rgba(0,0,0,0.6);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-bottom: 3px solid var(--bf-orange);
+    padding: 22px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    color: var(--bf-text);
+    transition: all 0.3s ease;
+}
+
+.link-card:hover {
+    background: rgba(255,141,30,0.15);
+    transform: translateY(-3px);
+    border-color: var(--bf-orange);
+}
+
+.link-icon {
+    font-size: 1.8rem;
+    line-height: 1;
+}
+
+.link-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.link-desc {
+    font-size: 0.75rem;
+    color: #888;
+}
+
+/* ===== 待办清单 ===== */
+.todo-panel {
+    max-width: 640px;
+    background: rgba(0,0,0,0.6);
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 24px;
+}
+
+.todo-input-row input {
+    width: 100%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-bottom: 3px solid var(--bf-orange);
+    color: #fff;
+    font-size: 1.1rem;
+    font-family: 'Oswald', 'SimSun', '宋体', serif;
+    padding: 12px 16px;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.todo-input-row input:focus {
+    border-color: #fff;
+}
+
+.todo-list {
+    list-style: none;
+    margin: 16px 0 0;
+    padding: 0;
+}
+
+.todo-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    background: rgba(255,255,255,0.04);
+    border-left: 3px solid var(--bf-orange);
+    transition: background 0.3s;
+}
+
+.todo-item:hover {
+    background: rgba(255,255,255,0.08);
+}
+
+.todo-item.done {
+    border-left-color: #4a9eff;
+}
+
+.todo-item.done .todo-text {
+    text-decoration: line-through;
+    color: #666;
+}
+
+.todo-text {
+    flex: 1;
+    font-size: 1rem;
+}
+
+.todo-del {
+    background: none;
+    border: none;
+    color: #888;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0 4px;
+    transition: color 0.3s;
+}
+
+.todo-del:hover {
+    color: #ff5a00;
+}
+
+.todo-empty {
+    text-align: center;
+    color: #666;
+    padding: 24px 0;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+}
+
 /* 卡片布局 */
 .card-grid {
     display: grid;
@@ -195,7 +324,7 @@ body {
     border: none;
     color: #fff;
     font-size: 1.5rem;
-    font-family: 'Oswald';
+    font-family: 'Oswald', 'SimSun', '宋体', serif;
     outline: none;
     width: 100%;
 }
@@ -327,6 +456,40 @@ body {
     position: relative;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     overflow: hidden;
+    --glow-color: #ffb800; /* JS 按温度覆盖 */
+}
+
+/* ===== 底部呼吸灯 ===== */
+/* ===== 底部呼吸灯：色条常亮 + 光晕呼吸 ===== */
+#weather-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        var(--glow-color, #ffb800) 18%,
+        var(--glow-color, #ffb800) 82%,
+        transparent 100%
+    );
+    opacity: 0.85; /* 常亮，时刻可见 */
+    animation: weather-breathe 2.8s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 2;
+}
+
+@keyframes weather-breathe {
+    0%, 100% {
+        opacity: 0.55;
+        box-shadow: 0 0 4px color-mix(in srgb, var(--glow-color) 40%, transparent);
+    }
+    50% {
+        opacity: 1;
+        box-shadow: 0 0 22px color-mix(in srgb, var(--glow-color) 80%, transparent);
+    }
 }
 
 #weather-card:hover {

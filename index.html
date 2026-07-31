@@ -46,16 +46,14 @@
     <main class="content">
         <header class="top-nav">
             <nav>
-                <a href="#" class="active">首页</a>
-                <a href="#">多人模式</a>
-                <a href="#">战役</a>
-                <a href="#">士兵</a>
-                <a href="#">商店</a>
-                <a href="#">更多</a>
+                <a href="#" class="active" data-view="home">首页</a>
+                <a href="#" data-view="links">收藏</a>
+                <a href="#" data-view="todo">待办</a>
             </nav>
             <div class="logo">LIJIREN 6495ED</div>
         </header>
 
+        <section class="view active" id="view-home">
         <section class="welcome-area">
             <h2 id="welcome-text">士兵, 午安。</h2>
         </section>
@@ -127,6 +125,90 @@
             </div>
             <div class="mini-card clock-card">
                 <div id="clock">00:00</div>
+            </div>
+        </section>
+        </section>
+
+        <!-- ========== 收藏视图 ========== -->
+        <section class="view" id="view-links">
+            <div class="welcome-area">
+                <h2>常用入口</h2>
+            </div>
+            <div class="link-grid">
+                <a href="https://www.doubao.com/chat" target="_blank" class="link-card">
+                    <span class="link-icon">🅓</span>
+                    <span class="link-name">豆包</span>
+                    <span class="link-desc">AI 对话</span>
+                </a>
+                <a href="https://chat.deepseek.com/" target="_blank" class="link-card">
+                    <span class="link-icon">🧠</span>
+                    <span class="link-name">DeepSeek</span>
+                    <span class="link-desc">AI 对话</span>
+                </a>
+                <a href="https://gemini.google.com" target="_blank" class="link-card">
+                    <span class="link-icon">✨</span>
+                    <span class="link-name">Gemini</span>
+                    <span class="link-desc">Google AI</span>
+                </a>
+                <a href="https://www.bilibili.com" target="_blank" class="link-card">
+                    <span class="link-icon">📺</span>
+                    <span class="link-name">哔哩哔哩</span>
+                    <span class="link-desc">视频</span>
+                </a>
+                <a href="https://github.com" target="_blank" class="link-card">
+                    <span class="link-icon">🐙</span>
+                    <span class="link-name">GitHub</span>
+                    <span class="link-desc">代码仓库</span>
+                </a>
+                <a href="https://ecampus.nwpu.edu.cn/" target="_blank" class="link-card">
+                    <span class="link-icon">🎓</span>
+                    <span class="link-name">校园网</span>
+                    <span class="link-desc">NWPU 门户</span>
+                </a>
+                <a href="https://www.zhihu.com" target="_blank" class="link-card">
+                    <span class="link-icon">❓</span>
+                    <span class="link-name">知乎</span>
+                    <span class="link-desc">问答社区</span>
+                </a>
+                <a href="https://mail.google.com" target="_blank" class="link-card">
+                    <span class="link-icon">✉️</span>
+                    <span class="link-name">谷歌邮箱</span>
+                    <span class="link-desc">Gmail</span>
+                </a>
+                <a href="https://www.xiaohongshu.com" target="_blank" class="link-card">
+                    <span class="link-icon">📕</span>
+                    <span class="link-name">小红书</span>
+                    <span class="link-desc">社区</span>
+                </a>
+                <a href="https://mail.qq.com" target="_blank" class="link-card">
+                    <span class="link-icon">✉️</span>
+                    <span class="link-name">QQ 邮箱</span>
+                    <span class="link-desc">邮件</span>
+                </a>
+                <a href="https://annas-archive.org" target="_blank" class="link-card">
+                    <span class="link-icon">📚</span>
+                    <span class="link-name">安娜的档案</span>
+                    <span class="link-desc">电子书库</span>
+                </a>
+                <a href="https://www.netflix.com" target="_blank" class="link-card">
+                    <span class="link-icon">🍿</span>
+                    <span class="link-name">Netflix</span>
+                    <span class="link-desc">影视</span>
+                </a>
+            </div>
+        </section>
+
+        <!-- ========== 待办视图 ========== -->
+        <section class="view" id="view-todo">
+            <div class="welcome-area">
+                <h2>待办清单</h2>
+            </div>
+            <div class="todo-panel">
+                <div class="todo-input-row">
+                    <input type="text" id="todo-input" placeholder="输入新指令，回车添加...">
+                </div>
+                <ul class="todo-list" id="todo-list"></ul>
+                <div class="todo-empty" id="todo-empty">暂无指令，去添加一条吧</div>
             </div>
         </section>
     </main>

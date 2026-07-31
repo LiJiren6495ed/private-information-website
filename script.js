@@ -359,7 +359,8 @@ async function refreshWeather() {
             ? 'linear-gradient(145deg, #0a1a3d 0%, #050e1a 45%, #050505 70%)'
             : 'linear-gradient(145deg, #0f1f3a 0%, #080e1a 45%, #050505 70%)';
         card.style.backgroundImage = bgGrad;
-        card.style.borderBottom = `4px solid ${accentColor}`;
+        // 流光颜色跟随温度（CSS 变量驱动 ::before/::after 动画）
+        card.style.setProperty('--glow-color', accentColor);
 
         // 更新时间
         const now = new Date();
@@ -390,6 +391,7 @@ async function refreshWeather() {
             }
             document.getElementById('weather-update').textContent = '🕐 获取失败';
             card.style.backgroundImage = 'linear-gradient(145deg, #1a0a0a 0%, #0a0a0a 70%)';
+            card.style.setProperty('--glow-color', '#ff8d1e'); // 战地橙兜底
         }
     }
 }
@@ -398,3 +400,97 @@ async function refreshWeather() {
 setTimeout(refreshWeather, 3000);
 // 每 15 分钟更新一次
 setInterval(refreshWeather, 900000);
+
+// =============================================
+// 顶栏视图切换
+// =============================================
+
+document.querySelectorAll('.top-nav nav a[data-view]').forEach(link => {
+    link.addEventListener('click', function (e) {
+        e.preventDefault();
+        const viewName = this.dataset.view;
+
+        // 切换导航高亮
+        document.querySelectorAll('.top-nav nav a[data-view]').forEach(a =>
+            a.classList.remove('active')
+        );
+        this.classList.add('active');
+
+        // 切换视图
+        document.querySelectorAll('.view').forEach(v =>
+            v.classList.remove('active')
+        );
+        const target = document.getElementById('view-' + viewName);
+        if (target) target.classList.add('active');
+    });
+});
+
+// =============================================
+// 待办清单（localStorage 持久化）
+// =============================================
+
+const TODO_KEY = 'bf1_todos';
+
+function loadTodos() {
+    try {
+        return JSON.parse(localStorage.getItem(TODO_KEY)) || [];
+    } catch (_) {
+        return [];
+    }
+}
+
+function saveTodos(todos) {
+    localStorage.setItem(TODO_KEY, JSON.stringify(todos));
+}
+
+function renderTodos() {
+    const todos = loadTodos();
+    const list = document.getElementById('todo-list');
+    const empty = document.getElementById('todo-empty');
+
+    list.innerHTML = '';
+    empty.style.display = todos.length === 0 ? 'block' : 'none';
+
+    todos.forEach((todo, i) => {
+        const li = document.createElement('li');
+        li.className = 'todo-item' + (todo.done ? ' done' : '');
+
+        const span = document.createElement('span');
+        span.className = 'todo-text';
+        span.textContent = todo.text;
+        // 点击文字切换完成状态
+        span.addEventListener('click', () => {
+            todos[i].done = !todos[i].done;
+            saveTodos(todos);
+            renderTodos();
+        });
+
+        const del = document.createElement('button');
+        del.className = 'todo-del';
+        del.textContent = '✕';
+        del.title = '删除';
+        del.addEventListener('click', () => {
+            todos.splice(i, 1);
+            saveTodos(todos);
+            renderTodos();
+        });
+
+        li.appendChild(span);
+        li.appendChild(del);
+        list.appendChild(li);
+    });
+}
+
+// 添加待办
+document.getElementById('todo-input').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && this.value.trim()) {
+        const todos = loadTodos();
+        todos.push({ text: this.value.trim(), done: false });
+        saveTodos(todos);
+        this.value = '';
+        renderTodos();
+    }
+});
+
+// 初始化渲染
+renderTodos();
